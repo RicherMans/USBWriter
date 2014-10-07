@@ -11,6 +11,7 @@ import sys
 import glib
 from pyudev import Context, Monitor
 import time
+import pyudev
 try:
     from pyudev.glib import MonitorObserver
     def device_event(obs,observer, device):
@@ -19,12 +20,12 @@ except:
     from pyudev.glib import GUDevMonitorObserver as MonitorObserver
     def device_event(obs,action,device):
         if action == 'add':
-            print 'Device {0} at {1}'.format(action,device)
-            global data,formatting,labelname
+            print 'Device {0} at {1}'.format(action,device.device_node)
+            global data,formatting,labelname 
+            mountFormatCopySingle(device.device_node)
 #             Custom timeout... we need some time until mounting is done
-            time.sleep(2)
-            mountFormatCopy()
-            print "Finished device %s !"%(device)
+#             mountFormatCopy()
+            print "Finished device %s !"%(device.device_node)
 data = None
 formatting = None
 labelname = None
@@ -42,13 +43,19 @@ def loopForDevices():
     context = Context()
     monitor = Monitor.from_netlink(context)
     
-    monitor.filter_by(subsystem='usb')
+    monitor.filter_by(subsystem='block',device_type='partition')
+#     monitor.filter_by(subsystem='usb')
     observer = MonitorObserver(monitor)
     
     observer.connect('device-event', device_event)
     monitor.start()
     glib.MainLoop().run()
- 
+
+def mountFormatCopySingle(devpath):
+    usb.formatDevice(devpath, formatting, labelname)
+    usb.mountAndCopy(data,devpath)
+    
+    
 def mountFormatCopy(): 
     mounteddevices = usb.checkMounts()
     if not mounteddevices:
@@ -56,11 +63,11 @@ def mountFormatCopy():
         print "Exiting ... "
         sys.exit(0)
     usb.formatDevices(mounteddevices, formatting,labelname)
-    usb.copyAndMount(data,mounteddevices )
+    usb.mountAndCopys(data,mounteddevices )
     
 def main():
-    usb.checkRoot()
     args = parseargs()
+    usb.checkRoot()
     global data,formatting,labelname
     data = args.data
     formatting = args.format

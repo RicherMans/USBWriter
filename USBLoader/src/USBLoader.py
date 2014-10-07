@@ -86,9 +86,11 @@ def path_checksum(paths):
                 _update_checksum(chksum, dirname(path), basename(path))
 
     return chksum.hexdigest()
-
-def copyAndMount(data, devices):
+def mountAndCopys(data,devices):
     for device in devices:
+        mountAndCopy(data, device)
+        
+def mountAndCopy(data, device):
         mountdir = ""
         if not isMounted(device):
             mountdir = tmpMount(device)
@@ -103,7 +105,6 @@ def copyAndMount(data, devices):
         if chksum1 != chksum2:
             raise IOError("Checksums not identical, error when transferring the files!")
             return
-        
         
 def copytree(src, dst, symlinks=False, ignore=None):
     for item in os.listdir(src):

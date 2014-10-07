@@ -104,6 +104,7 @@ def copyAndMount(data, devices):
             raise IOError("Checksums not identical, error when transferring the files!")
             return
         
+        
 def copytree(src, dst, symlinks=False, ignore=None):
     for item in os.listdir(src):
         s = os.path.join(src, item)

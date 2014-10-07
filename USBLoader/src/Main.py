@@ -10,6 +10,7 @@ import USBLoader as usb
 import sys
 import glib
 from pyudev import Context, Monitor
+import time
 try:
     from pyudev.glib import MonitorObserver
     def device_event(obs,observer, device):
@@ -17,11 +18,13 @@ try:
 except:
     from pyudev.glib import GUDevMonitorObserver as MonitorObserver
     def device_event(obs,action,device):
-        print 'Device {0}'.format(action)
         if action == 'add':
+            print 'Device {0} at {1}'.format(action,device)
             global data,formatting,labelname
-            print device
-            mountFormatCopy(data, formatting)
+#             Custom timeout... we need some time until mounting is done
+            time.sleep(2)
+            mountFormatCopy()
+            print "Finished device %s !"%(device)
 data = None
 formatting = None
 labelname = None
@@ -65,7 +68,7 @@ def main():
     if args.loop:
         loopForDevices()
     else:
-        mountFormatCopy(args.data, args.format)
+        mountFormatCopy()
     print "Finished!"
 
 if __name__ == '__main__':
